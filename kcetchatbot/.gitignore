@@ -7,7 +7,7 @@ Lib\site-packages
 
 # Django
 db.sqlite3
-*.sqlite3
+
 venv/
 __pycache__/
 *.py[cod]
@@ -23,11 +23,12 @@ media/
 media/
 videos/
 
-# Static collected files
+
 migrations
 
-base.html
 #html
+base.html
+
 chatbot_report.html
 header.html
 home.html
