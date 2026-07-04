@@ -115,5 +115,5 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
-Api="AIzaSyAbfPGQ-LPjTqqXn-VMSMkopndXheG22pI"
+
 STATIC_URL = 'static/'
