@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+
+# Virtual Environment
+venv
+Lib\site-packages
+
+# Django
+db.sqlite3
+*.sqlite3
+venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+.env
+.vscode/
+.idea/
+*.log
+staticfiles/
+media/
+
+# Media
+media/
+videos/
+
+# Static collected files
+migrations
+
+base.html
+#html
+chatbot_report.html
+header.html
+home.html
+body.html
+
+
+
+# VS Code
+.vscode/
+
+# Python cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Migrations cache
+*.pyc

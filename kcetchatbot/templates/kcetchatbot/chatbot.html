@@ -1,0 +1,670 @@
+{% csrf_token %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KCET Chatbot</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ================================
+  FORCE CHATBOT TO TOP LAYER
+================================ */
+#chatbotToggle {
+  z-index: 999999 !important;
+  position: fixed !important;
+  display: flex;
+}
+
+#chatbotContainer {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+/* ================================
+  CHATBOT FULLY ISOLATED CSS
+================================ */
+#chatbotContainer {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 360px;
+  max-width: 95vw;
+  height: 560px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 9999;
+  font-family: 'Poppins', sans-serif;
+}
+
+#chatbotContainer * {
+  box-sizing: border-box;
+}
+
+/* Toggle Button */
+#chatbotToggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  z-index: 9999;
+  display: none;
+}
+
+/* Header */
+#chatbotContainer .chat-header {
+  background: #2563eb;
+  color: white;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+}
+
+#closeChatbot {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Body */
+#chatBody {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  background: #f5f7fa;
+  scroll-behavior: smooth;
+}
+
+/* Messages */
+.chat-bot-msg {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 88%;
+}
+
+.chat-user-msg {
+  background: #2563eb;
+  color: white;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  margin-left: auto;
+  text-align: right;
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 88%;
+}
+
+/* ================================
+  BOT LOADING ANIMATION
+================================ */
+.chat-loading {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 64px;
+  max-width: 88%;
+}
+
+.chat-loading span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+  display: inline-block;
+  animation: chatbotBounce 1.2s infinite ease-in-out;
+}
+
+.chat-loading span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.chat-loading span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes chatbotBounce {
+  0%, 80%, 100% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Input Area */
+#chatForm {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #eee;
+}
+
+#message {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-family: inherit;
+}
+
+#chatForm button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 25px;
+  cursor: pointer;
+}
+
+/* Menu Buttons */
+.chat-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chat-menu button {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 2px solid #2563eb;
+  background: white;
+  color: #2563eb;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ================================
+  LOGO STYLING
+================================ */
+.chat-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  background: white;
+  padding: 3px;
+  border-radius: 6px;
+}
+
+#chatbotToggle {
+  padding: 0;
+  border: 3px solid #504aff;
+  overflow: hidden;
+  bottom: 40px;
+}
+
+#chatbotToggle .toggle-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* ================================
+  PROFESSIONAL SEND BUTTON
+================================ */
+#chatForm .send-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #2f5be7; /* clean blue */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(47, 91, 231, 0.4);
+  transition: all 0.2s ease;
+}
+
+#chatForm .send-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(47, 91, 231, 0.5);
+}
+
+#chatForm .send-btn:active {
+  transform: scale(0.95);
+}
+
+#chatForm .send-icon {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+/* Mobile Responsive Fix */
+@media (max-width:600px) {
+  #chatForm {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  #chatForm input {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  #chatForm .send-btn {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  #chatForm .send-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* =================================
+  ATTACHED WELCOME BUBBLE
+================================= */
+.kcet-welcome-bubble {
+  position: fixed;
+  bottom: 32px;
+  right: 100px;
+  background: #f1f3f6;
+  padding: 16px 20px;
+  border-radius: 20px;
+  font-size: 15px;
+  color: #2c3e50;
+  max-width: 240px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+  z-index: 999998;
+  animation: fadeSlide 0.4s ease;
+  position: fixed;
+}
+
+/* Bubble tail */
+.kcet-welcome-bubble::after {
+  content: "";
+  position: absolute;
+  right: -8px;
+  bottom: 18px;
+  width: 16px;
+  height: 16px;
+  background: #f1f3f6;
+  transform: rotate(45deg);
+}
+
+/* Close button */
+.kcet-welcome-close {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 22px;
+  height: 22px;
+  background: #ff3b30;
+  color: white;
+  border-radius: 50%;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Animation */
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- FLOAT BUTTON -->
+<button id="chatbotToggle">
+  <img src="{% static 'kcetchatbot/images/kcetlogo.png' %}" class="toggle-logo">
+</button>
+
+<!-- CHATBOT -->
+<div id="chatbotContainer">
+
+  <!-- HEADER -->
+  <div class="chat-header">
+    <img src="{% static 'kcetchatbot/images/kcetlogo.png' %}" class="chat-logo">
+    <span>KCET Assistant</span>
+    <button id="closeChatbot">X</button>
+  </div>
+
+  <img id="kcetStaticLogo"
+       src="{% static 'kcetchatbot/images/kcetlogo.png' %}"
+       style="display:none;">
+
+  <!-- CHAT BODY -->
+  <div id="chatBody"></div>
+
+  <!-- INPUT -->
+  <form id="chatForm">
+    <input id="message" placeholder="Type here..." autocomplete="off"/>
+    <button type="submit" class="send-btn">
+      <svg viewBox="0 0 24 24" class="send-icon">
+        <path d="M2 21L23 12L2 3L2 10L17 12L2 14L2 21Z"/>
+      </svg>
+    </button>
+  </form>
+
+</div>
+
+<script>
+const chatBody = document.getElementById("chatBody");
+const form = document.getElementById("chatForm");
+const input = document.getElementById("message");
+const toggleBtn = document.getElementById("chatbotToggle");
+const chatbot = document.getElementById("chatbotContainer");
+const closeBtn = document.getElementById("closeChatbot");
+
+let isChatInitialized = false;
+
+// ---------------------------
+// INITIAL STATE
+// ---------------------------
+window.addEventListener("DOMContentLoaded", () => {
+  chatbot.style.display = "none";
+  toggleBtn.style.display = "flex";
+  showKCETWelcomeBubble();
+});
+
+// ---------------------------
+// OPEN CHATBOT
+// ---------------------------
+function openChatbot() {
+  chatbot.style.display = "flex";
+  toggleBtn.style.display = "none";
+
+  const bubble = document.querySelector(".kcet-welcome-bubble");
+  if (bubble) bubble.remove();
+
+  if (!isChatInitialized) {
+    send("");
+    isChatInitialized = true;
+  }
+}
+
+toggleBtn.onclick = openChatbot;
+
+// ---------------------------
+// CLOSE CHATBOT
+// ---------------------------
+closeBtn.onclick = () => {
+  chatbot.style.display = "none";
+  toggleBtn.style.display = "flex";
+};
+
+// ---------------------------
+// UI HELPERS
+// ---------------------------
+function scrollChatToBottom() {
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function addBot(text) {
+  const div = document.createElement("div");
+  div.className = "chat-bot-msg";
+  div.innerHTML = text.replace(/\n/g, "<br>");
+  chatBody.appendChild(div);
+  scrollChatToBottom();
+}
+
+function addUser(text) {
+  const div = document.createElement("div");
+  div.className = "chat-user-msg";
+  div.textContent = text;
+  chatBody.appendChild(div);
+  scrollChatToBottom();
+}
+
+function showBotLoading() {
+  removeBotLoading();
+
+  const div = document.createElement("div");
+  div.className = "chat-loading";
+  div.id = "botLoading";
+
+  div.innerHTML = `
+     <span></span>
+  <span></span>
+  <span></span>
+  <small style="margin-left:8px;color:#64748b;">KCET Assistant is typing...</small>
+  `;
+
+  chatBody.appendChild(div);
+  scrollChatToBottom();
+}
+
+function removeBotLoading() {
+  const loading = document.getElementById("botLoading");
+  if (loading) {
+    loading.remove();
+  }
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function send(text) {
+  chatBody.innerHTML = "";
+  showBotLoading();
+
+  try {
+    const response = await fetch("/chat/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: `message=${encodeURIComponent(text)}`
+    });
+
+    const data = await response.json();
+
+    // 👉 ADD LOADING DELAY HERE
+    await delay(800);
+
+    removeBotLoading();
+    handleResponse(data);
+
+  } catch (error) {
+    removeBotLoading();
+    chatBody.innerHTML = "";
+    addBot("Something went wrong. Please try again.");
+    console.error(error);
+  }
+}
+// ---------------------------
+// BACKEND CALLS
+// ---------------------------
+function send(text) {
+  showBotLoading();
+
+  fetch("/chat/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-CSRFToken": "{{ csrf_token }}"
+    },
+    body: `message=${encodeURIComponent(text)}`
+  })
+  .then(response => response.json())
+  .then(data => {
+    removeBotLoading();
+    handleResponse(data);
+  })
+  .catch(error => {
+    removeBotLoading();
+    addBot("Something went wrong. Please try again.");
+    console.error(error);
+  });
+}
+
+async function menuClick(id) {
+  chatBody.innerHTML = "";
+  showBotLoading();
+
+  try {
+    const response = await fetch("/chat/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: `action=${encodeURIComponent(id)}`
+    });
+
+    const data = await response.json();
+
+    // 👉 ADD DELAY HERE ALSO
+    await delay(800);
+
+    removeBotLoading();
+    handleResponse(data);
+
+  } catch (error) {
+    removeBotLoading();
+    chatBody.innerHTML = "";
+    addBot("Something went wrong. Please try again.");
+    console.error(error);
+  }
+}
+
+// ---------------------------
+// FORM SUBMIT
+// ---------------------------
+form.onsubmit = e => {
+  e.preventDefault();
+
+  const text = input.value.trim();
+  if (!text) return;
+
+  addUser(text);
+  input.value = "";
+  send(text);
+};
+
+// ---------------------------
+// RESPONSE HANDLER
+// ---------------------------
+function handleResponse(data) {
+  chatBody.innerHTML = "";
+  if (data.bot) {
+    addBot(data.bot);
+    
+  }
+
+  if (data.url) {
+    const baseURL = "https://kamarajengg.edu.in";
+
+    const linkDiv = document.createElement("div");
+    linkDiv.className = "chat-bot-msg";
+
+    const fullURL = data.url.startsWith("http") ? data.url : baseURL + data.url;
+
+    linkDiv.innerHTML = `
+      <a href="${fullURL}" style="
+        color:#2563eb;
+        text-decoration:none;
+        font-weight:500;">
+        &#127760; More Details 
+        <small style="color:#64748b;">
+    ${fullURL}
+  </small>
+      </a>
+  
+    `;
+
+    chatBody.appendChild(linkDiv);
+  }
+
+  if (data.menu) {
+    const wrap = document.createElement("div");
+    wrap.className = "chat-menu";
+
+    data.menu.forEach(item => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = item.label;
+      btn.onclick = () => menuClick(item.id);
+      wrap.appendChild(btn);
+    });
+
+    chatBody.appendChild(wrap);
+  }
+
+  scrollChatToBottom();
+}
+
+// ---------------------------
+// WELCOME BUBBLE
+// ---------------------------
+function showKCETWelcomeBubble() {
+  if (document.querySelector(".kcet-welcome-bubble")) return;
+
+  const bubble = document.createElement("div");
+  bubble.className = "kcet-welcome-bubble";
+
+  bubble.innerHTML = `
+    <div class="kcet-welcome-close">&#10006;</div>
+    I’m the KCET AI Assistant. How may I assist you?
+  `;
+
+  document.body.appendChild(bubble);
+
+  bubble.querySelector(".kcet-welcome-close").onclick = () => {
+    bubble.remove();
+  };
+}
+</script>
+
+</body>
+</html>
